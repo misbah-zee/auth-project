@@ -2,7 +2,7 @@
 // Automatically detects if running locally or in production (hosted on Vercel)
 // IMPORTANT: Once you deploy your backend to Railway, replace the Railway URL placeholder below.
 const DEFAULT_LOCAL_API = 'http://localhost:5000';
-const DEFAULT_PROD_API = 'https://auth-project-backend.up.railway.app'; // <-- REPLACE THIS with your deployed Railway backend URL
+const DEFAULT_PROD_API = 'https://auth-project-production-2d1e.up.railway.app';
 
 const API_BASE_URL = localStorage.getItem('API_BASE_URL') || 
   (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
