@@ -20,9 +20,24 @@ app.use(express.json());
 
 // MongoDB Connection
 const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/auth_demo';
-mongoose.connect(mongoURI)
-  .then(() => console.log('MongoDB Connected Successfully!'))
-  .catch(err => console.error('MongoDB Connection Error:', err));
+
+const connectWithRetry = () => {
+  mongoose.connect(mongoURI, {
+    serverSelectionTimeoutMS: 30000,
+    socketTimeoutMS: 45000,
+    connectTimeoutMS: 30000,
+    maxPoolSize: 10,
+    family: 4, // Force IPv4
+  })
+    .then(() => console.log('✅ MongoDB Connected Successfully!'))
+    .catch(err => {
+      console.error('❌ MongoDB Connection Error:', err.message);
+      console.log('🔄 Retrying connection in 5 seconds...');
+      setTimeout(connectWithRetry, 5000);
+    });
+};
+
+connectWithRetry();
 
 // User Schema
 const userSchema = new mongoose.Schema({
