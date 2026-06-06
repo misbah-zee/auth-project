@@ -227,6 +227,7 @@ function setupDashboard(user) {
   // Set User Profile Card values
   document.getElementById('user-name').innerText = user.name || 'System User';
   document.getElementById('user-contact').innerText = user.email || user.phone || 'Authenticated User';
+  document.getElementById('dashboard-user-display-name').innerText = 'MISBAH ULLAH';
   
   // Set Avatar Letter
   const firstLetter = user.name ? user.name.charAt(0).toUpperCase() : 'U';
