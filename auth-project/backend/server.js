@@ -6,7 +6,12 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
+const { webcrypto } = require('crypto');
 require('dotenv').config();
+
+if (!globalThis.crypto) {
+  globalThis.crypto = webcrypto;
+}
 
 const app = express();
 const PORT = process.env.PORT || 5000;
