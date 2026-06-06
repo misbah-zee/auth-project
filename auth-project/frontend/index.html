@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secure Auth - Antigravity</title>
+  <!-- Google Fonts for Outfit and Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Custom Stylesheets -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Animated Background Elements -->
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Main Container -->
+  <main class="app-container">
+
+    <!-- ================= AUTH CONTAINER ================= -->
+    <div id="auth-card" class="auth-card">
+      <div class="auth-header">
+        <div class="brand-logo">
+          <i data-lucide="shield-check" class="brand-icon"></i>
+          <span>Portal</span>
+        </div>
+        <h1 id="auth-title">Welcome Back</h1>
+        <p id="auth-subtitle">Secure access to your account panel</p>
+      </div>
+
+      <!-- Auth Switcher Tabs (Login vs Signup) -->
+      <div class="tab-container" id="main-tabs">
+        <button class="tab-btn active" onclick="switchAuthTab('login')">Sign In</button>
+        <button class="tab-btn" onclick="switchAuthTab('signup')">Sign Up</button>
+      </div>
+
+      <!-- 1. SIGN IN SCREEN -->
+      <div id="login-form-container" class="form-wrapper">
+        <!-- Login Method Sub-Tabs (Password vs OTP) -->
+        <div class="sub-tab-container">
+          <button class="sub-tab-btn active" id="btn-login-password" onclick="switchLoginMethod('password')">
+            <i data-lucide="key-round"></i> Password
+          </button>
+          <button class="sub-tab-btn" id="btn-login-otp" onclick="switchLoginMethod('otp')">
+            <i data-lucide="smartphone"></i> OTP Login
+          </button>
+        </div>
+
+        <form id="login-form" onsubmit="handleLoginSubmit(event)">
+          <!-- Unified Email/Phone Input -->
+          <div class="input-group">
+            <label for="login-identifier">Email or Phone Number</label>
+            <div class="input-wrapper">
+              <i data-lucide="user" class="input-icon"></i>
+              <input type="text" id="login-identifier" placeholder="e.g. user@domain.com or +919876543210" required>
+            </div>
+          </div>
+
+          <!-- Password Field (Password Mode Only) -->
+          <div class="input-group" id="login-password-group">
+            <div class="label-row">
+              <label for="login-password">Password</label>
+            </div>
+            <div class="input-wrapper">
+              <i data-lucide="lock" class="input-icon"></i>
+              <input type="password" id="login-password" placeholder="Enter your password">
+              <button type="button" class="password-toggle" onclick="togglePasswordVisibility('login-password')">
+                <i data-lucide="eye" id="login-password-toggle-icon"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- OTP Request Button / Input Fields (OTP Mode Only) -->
+          <div id="login-otp-section" class="otp-section hidden">
+            <!-- Send OTP Button -->
+            <button type="button" id="btn-send-otp" class="btn btn-secondary w-full" onclick="requestOTP()">
+              <span>Send One-Time Password (OTP)</span>
+              <i data-lucide="send"></i>
+            </button>
+
+            <!-- OTP Input Box (Hidden until OTP sent) -->
+            <div id="otp-input-group" class="input-group hidden animate-fade-in">
+              <label for="login-otp">Enter 6-digit OTP</label>
+              <div class="input-wrapper">
+                <i data-lucide="lock-keyhole" class="input-icon"></i>
+                <input type="text" id="login-otp" placeholder="Enter OTP code" maxlength="6">
+              </div>
+              <p class="input-helper">A demo OTP will appear in a toast notification above.</p>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" id="btn-login-submit" class="btn btn-primary w-full m-t-2">
+            <span>Sign In</span>
+            <i data-lucide="arrow-right"></i>
+          </button>
+        </form>
+      </div>
+
+      <!-- 2. SIGN UP SCREEN -->
+      <div id="signup-form-container" class="form-wrapper hidden">
+        <form id="signup-form" onsubmit="handleSignupSubmit(event)">
+          <!-- Full Name -->
+          <div class="input-group">
+            <label for="signup-name">Full Name</label>
+            <div class="input-wrapper">
+              <i data-lucide="user-check" class="input-icon"></i>
+              <input type="text" id="signup-name" placeholder="John Doe" required>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="input-group">
+            <label for="signup-email">Email Address <span class="optional">(Optional if Phone is filled)</span></label>
+            <div class="input-wrapper">
+              <i data-lucide="mail" class="input-icon"></i>
+              <input type="email" id="signup-email" placeholder="john@example.com">
+            </div>
+          </div>
+
+          <!-- Phone -->
+          <div class="input-group">
+            <label for="signup-phone">Phone Number <span class="optional">(Optional if Email is filled)</span></label>
+            <div class="input-wrapper">
+              <i data-lucide="phone" class="input-icon"></i>
+              <input type="tel" id="signup-phone" placeholder="e.g. +919876543210">
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="input-group">
+            <label for="signup-password">Password</label>
+            <div class="input-wrapper">
+              <i data-lucide="lock" class="input-icon"></i>
+              <input type="password" id="signup-password" placeholder="Create secure password" required minlength="6">
+              <button type="button" class="password-toggle" onclick="togglePasswordVisibility('signup-password')">
+                <i data-lucide="eye" id="signup-password-toggle-icon"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn btn-primary w-full m-t-2">
+            <span>Create Account</span>
+            <i data-lucide="user-plus"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ================= DASHBOARD CONTAINER (POST LOGIN) ================= -->
+    <div id="dashboard-card" class="dashboard-card hidden">
+      <header class="dashboard-header">
+        <div class="user-profile">
+          <div class="avatar" id="user-avatar">U</div>
+          <div class="profile-info">
+            <h3 id="user-name">Loading...</h3>
+            <span id="user-contact">user@example.com</span>
+          </div>
+        </div>
+        <button class="btn btn-logout" onclick="handleLogout()">
+          <span>Log Out</span>
+          <i data-lucide="log-out"></i>
+        </button>
+      </header>
+
+      <div class="dashboard-content">
+        <div class="badge-status">
+          <span class="pulse-indicator"></span>
+          <span>Authenticated Access</span>
+        </div>
+
+        <h2 class="dashboard-subtitle" id="dashboard-welcome-label">Creator</h2>
+        
+        <!-- The visual centerpiece presenting Misbah Ulllah -->
+        <div class="name-centerpiece-container">
+          <h1 class="brand-name-glowing" id="dashboard-user-display-name">Misbah Ulllah</h1>
+          <p class="tagline" id="dashboard-user-tagline">Securely Authenticated Session</p>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-header">
+              <i data-lucide="server" class="info-icon"></i>
+              <span>API Server</span>
+            </div>
+            <div class="info-value" id="api-status">Connecting...</div>
+          </div>
+          <div class="info-card">
+            <div class="info-header">
+              <i data-lucide="database" class="info-icon"></i>
+              <span>Database</span>
+            </div>
+            <div class="info-value" id="db-status">Online (MongoDB)</div>
+          </div>
+          <div class="info-card">
+            <div class="info-header">
+              <i data-lucide="clock" class="info-icon"></i>
+              <span>Active Session</span>
+            </div>
+            <div class="info-value">7 Days (JWT Valid)</div>
+          </div>
+        </div>
+      </div>
+      
+      <footer class="dashboard-footer">
+        <p>Built with Vanilla HTML5, CSS3, & Node.js API</p>
+      </footer>
+    </div>
+
+  </main>
+
+  <!-- Script Modules -->
+  <script src="script.js"></script>
+</body>
+</html>
