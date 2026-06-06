@@ -1,10 +1,10 @@
 // API Base URL Configuration
-// Automatically detects if running locally or in production (hosted on Vercel)
-// IMPORTANT: Once you deploy your backend to Railway, replace the Railway URL placeholder below.
+// For Vercel, edit config.js and set window.AUTH_API_BASE_URL to your Railway URL.
 const DEFAULT_LOCAL_API = 'http://localhost:5000';
 const DEFAULT_PROD_API = 'https://auth-project-production-2d1e.up.railway.app';
 
-const API_BASE_URL = localStorage.getItem('API_BASE_URL') || 
+const API_BASE_URL = localStorage.getItem('API_BASE_URL') ||
+  window.AUTH_API_BASE_URL ||
   (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
     ? DEFAULT_LOCAL_API 
     : DEFAULT_PROD_API);
@@ -165,7 +165,7 @@ function switchLoginMethod(method) {
 async function checkApiHealth() {
   const apiStatusEl = document.getElementById('api-status');
   try {
-    const res = await fetch(`${API_BASE_URL}/`);
+    const res = await fetch(`${API_BASE_URL}/api/health`);
     const data = await res.json();
     if (res.ok) {
       apiStatusEl.innerText = 'Online';

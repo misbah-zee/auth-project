@@ -13,7 +13,25 @@ const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'antigravity_secret_key_12345';
 
 // Middleware
-app.use(cors());
+const allowedOrigins = (process.env.FRONTEND_URL || '')
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
+
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    if (/^https:\/\/.+\.vercel\.app$/.test(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true
+}));
 app.use(express.json());
 
 // MongoDB Connection
@@ -66,11 +84,44 @@ async function findUserByEmailOrPhone(identifier) {
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || '',
   port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: process.env.SMTP_SECURE === 'true',
   auth: {
     user: process.env.SMTP_USER || '',
     pass: process.env.SMTP_PASS || '',
   },
 });
+
+async function sendSmsOtp(phone, otp) {
+  const sid = process.env.TWILIO_ACCOUNT_SID;
+  const token = process.env.TWILIO_AUTH_TOKEN;
+  const from = process.env.TWILIO_FROM_PHONE;
+
+  if (!sid || !token || !from || !phone) {
+    return false;
+  }
+
+  const body = new URLSearchParams({
+    To: phone,
+    From: from,
+    Body: `Your Secure Auth OTP is ${otp}. It expires in 5 minutes.`
+  });
+
+  const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Basic ${Buffer.from(`${sid}:${token}`).toString('base64')}`,
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Twilio SMS failed: ${errorText}`);
+  }
+
+  return true;
+}
 
 // Authentication Middleware
 const authMiddleware = (req, res, next) => {
@@ -92,7 +143,15 @@ const authMiddleware = (req, res, next) => {
 
 // Health check endpoint
 app.get('/', (req, res) => {
-  res.json({ success: true, message: 'Antigravity Auth API is running smoothly!' });
+  res.json({ success: true, message: 'Secure Auth API is running.' });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({
+    success: true,
+    status: 'online',
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'connecting'
+  });
 });
 
 // 1. Signup Route
@@ -220,15 +279,16 @@ app.post('/api/otp/send', async (req, res) => {
     console.log(`[Demo OTP Log] OTP for ${emailOrPhone} is: ${otp}`);
 
     let emailSent = false;
+    let smsSent = false;
     // Attempt real email send if configured
     if (user.email && process.env.SMTP_HOST && process.env.SMTP_USER) {
       try {
         await transporter.sendMail({
-          from: `"Antigravity Secure Auth" <${process.env.SMTP_USER}>`,
+          from: `"Secure Auth" <${process.env.SMTP_USER}>`,
           to: user.email,
-          subject: 'Your One-Time Password (OTP) - Antigravity Auth',
-          text: `Hello ${user.name},\n\nYour OTP for logging in is: ${otp}. It will expire in 5 minutes.\n\nBest regards,\nAntigravity Team`,
-          html: `<p>Hello <strong>${user.name}</strong>,</p><p>Your OTP for logging in is: <strong style="font-size: 18px; color: #6366f1; letter-spacing: 2px;">${otp}</strong>.</p><p>It will expire in 5 minutes.</p><br><p>Best regards,<br>Antigravity Team</p>`
+          subject: 'Your One-Time Password (OTP)',
+          text: `Hello ${user.name},\n\nYour OTP for logging in is: ${otp}. It will expire in 5 minutes.\n\nSecure Auth`,
+          html: `<p>Hello <strong>${user.name}</strong>,</p><p>Your OTP for logging in is: <strong style="font-size: 18px; color: #6366f1; letter-spacing: 2px;">${otp}</strong>.</p><p>It will expire in 5 minutes.</p>`
         });
         emailSent = true;
       } catch (err) {
@@ -236,11 +296,22 @@ app.post('/api/otp/send', async (req, res) => {
       }
     }
 
+    if (user.phone) {
+      try {
+        smsSent = await sendSmsOtp(user.phone, otp);
+      } catch (err) {
+        console.error('SMS OTP Error:', err.message);
+      }
+    }
+
+    const delivered = emailSent || smsSent;
+
     res.json({
       success: true,
-      message: emailSent ? 'OTP sent to your email address.' : 'OTP generated successfully (Demo Mode).',
+      message: delivered ? 'OTP sent successfully.' : 'OTP generated successfully (Demo Mode).',
       demoOtp: otp, // Returned for easy copying on frontend testing
-      emailSent
+      emailSent,
+      smsSent
     });
 
   } catch (error) {
