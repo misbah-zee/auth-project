@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Protected Page</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <main class="app-container protected-container">
+    <section class="dashboard-card protected-card">
+      <header class="dashboard-header">
+        <div class="user-profile">
+          <div class="avatar" id="protected-avatar">M</div>
+          <div class="profile-info">
+            <h3 id="protected-profile-name">Checking session...</h3>
+            <span id="protected-contact">Protected account</span>
+          </div>
+        </div>
+        <button class="btn btn-logout" onclick="logoutProtectedUser()">
+          <span>Log Out</span>
+          <i data-lucide="log-out"></i>
+        </button>
+      </header>
+
+      <div class="dashboard-content">
+        <div class="badge-status">
+          <span class="pulse-indicator"></span>
+          <span>Protected Page</span>
+        </div>
+
+        <h2 class="dashboard-subtitle">Authenticated Creator</h2>
+        <div class="name-centerpiece-container protected-name-panel">
+          <h1 class="brand-name-glowing protected-name" id="protected-main-name">Verifying...</h1>
+          <p class="tagline">This page is visible only after login or signup.</p>
+        </div>
+
+        <div class="info-grid protected-info-grid">
+          <div class="info-card">
+            <div class="info-header">
+              <i data-lucide="shield-check" class="info-icon"></i>
+              <span>Access</span>
+            </div>
+            <div class="info-value connected">Verified</div>
+          </div>
+          <div class="info-card">
+            <div class="info-header">
+              <i data-lucide="server" class="info-icon"></i>
+              <span>API</span>
+            </div>
+            <div class="info-value connected" id="protected-api-status">Online</div>
+          </div>
+          <div class="info-card">
+            <div class="info-header">
+              <i data-lucide="lock-keyhole" class="info-icon"></i>
+              <span>Session</span>
+            </div>
+            <div class="info-value">JWT Active</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="protected.js"></script>
+</body>
+</html>

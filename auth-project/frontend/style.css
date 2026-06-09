@@ -619,6 +619,26 @@ body {
   color: var(--success-color);
 }
 
+.protected-container {
+  max-width: 760px;
+}
+
+.protected-card {
+  min-height: 520px;
+}
+
+.protected-name-panel {
+  padding: 54px 16px;
+}
+
+.protected-name {
+  font-size: 4.2rem;
+}
+
+.protected-info-grid .connected {
+  color: var(--success-color);
+}
+
 .dashboard-footer {
   text-align: center;
   margin-top: 24px;
@@ -744,5 +764,8 @@ body {
   .info-grid {
     grid-template-columns: 1fr;
     gap: 8px;
+  }
+  .protected-name {
+    font-size: 2.7rem;
   }
 }

@@ -12,6 +12,8 @@ const API_BASE_URL = localStorage.getItem('API_BASE_URL') ||
 // Print API Config to Console
 console.log(`[Auth Client] Pointing to API backend at: ${API_BASE_URL}`);
 
+const PROTECTED_PAGE = 'protected.html';
+
 // Client State
 let activeAuthTab = 'login';
 let activeLoginMethod = 'password';
@@ -200,8 +202,7 @@ async function checkAuthSession() {
 
     const data = await res.json();
     if (res.ok && data.success) {
-      setupDashboard(data.user);
-      toggleView('dashboard');
+      window.location.href = PROTECTED_PAGE;
     } else {
       // Token expired or invalid
       localStorage.removeItem('jwt_token');
@@ -358,8 +359,8 @@ async function handleLoginSubmit(event) {
       localStorage.setItem('jwt_token', data.token);
       setupDashboard(data.user);
       
-      // Transition Page
-      toggleView('dashboard');
+      // Transition to protected page
+      window.location.href = PROTECTED_PAGE;
     } else {
       showToast('Authentication Failed', data.message || 'Incorrect credentials.', 'error');
     }
@@ -416,8 +417,8 @@ async function handleSignupSubmit(event) {
       localStorage.setItem('jwt_token', data.token);
       setupDashboard(data.user);
       
-      // Transition Page
-      toggleView('dashboard');
+      // Transition to protected page
+      window.location.href = PROTECTED_PAGE;
     } else {
       showToast('Registration Refused', data.message || 'Error creating account.', 'error');
     }
